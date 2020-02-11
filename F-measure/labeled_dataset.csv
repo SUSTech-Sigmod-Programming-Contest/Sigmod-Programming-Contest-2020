@@ -1,0 +1,11 @@
+left_spec_id,right_spec_id,label
+www.s1.com//1,www.s2.com//1,1
+www.s3.com//1,www.s2.com//1,1
+www.s3.com//1,www.s1.com//1,1
+www.s4.com//1,www.s5.com//1,1
+www.s1.com//1,www.s4.com//1,0
+www.s1.com//1,www.s5.com//1,0
+www.s2.com//1,www.s4.com//1,0
+www.s2.com//1,www.s5.com//1,0
+www.s3.com//1,www.s4.com//1,0
+www.s3.com//1,www.s5.com//1,0
