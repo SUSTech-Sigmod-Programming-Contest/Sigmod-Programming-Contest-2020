@@ -40,7 +40,7 @@ class Graph:
         self.std = std_path
         self.submission = submission_path
 
-    def create_Graph(self):
+    def create_stdGraph(self):
         with open(self.std, 'r') as file:
             reader = csv.reader(file)
             i = False
@@ -68,6 +68,7 @@ class Graph:
                 else:
                     i = True
 
+    def create_submissionGraph(self):
         with open(self.submission, 'r') as file:
             reader = csv.reader(file)
             i = False
@@ -78,13 +79,13 @@ class Graph:
                         v = self.node_index[row[1]]
                         self.myEdges[u + v * (self.nodes_cnt + 7)] = 1
                         self.myEdges[v + u * (self.nodes_cnt + 7)] = 1
-                        if hashing in self.stdEdges:
+                        if u + v * (self.nodes_cnt + 7) in self.stdEdges:
                             F1.TP += 1
                         else:
                             F1.FP += 1
                 else:
                     i = True
-
+    def calculate_FN(self):
         with open(self.std, 'r') as file:
             reader = csv.reader(file)
             i = False
@@ -92,13 +93,14 @@ class Graph:
                 if i and row[2] == '1':
                     u = self.node_index[row[0]]
                     v = self.node_index[row[1]]
-                    hashing = u + v * (self.nodes_cnt + 7)
-                    if hashing in self.myEdges:
+                    if u + v * (self.nodes_cnt + 7) in self.myEdges:
                         F1.FN += 1
                 else:
                     i = True
 
-
-G1 = Graph('labeled_dataset.csv', 'submission.csv')
-G1.create_Graph()
-F1.calculate_result()
+if __name__ == '__main__':
+    G1 = Graph('labeled_dataset.csv', 'submission.csv')
+    G1.create_stdGraph()
+    G1.create_submissionGraph()
+    G1.calculate_FN()
+    F1.calculate_result()
