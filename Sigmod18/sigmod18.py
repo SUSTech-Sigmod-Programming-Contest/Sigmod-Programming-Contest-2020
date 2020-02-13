@@ -13,8 +13,8 @@ def split(all_df, shuffle=False, ratio=0.8):
         all_df.sample(frac=1).reset_index(drop=True)
     train = all_df.loc[:offset]
     validation = all_df.loc[offset:]
-    train.to_csv('train.csv', sep=',')
-    validation.to_csv('validation.csv', sep=',')
+    train.to_csv('train.csv',index = False, sep=',')
+    validation.to_csv('validation.csv',index=False, sep=',')
     return train, validation
 
 
