@@ -20,6 +20,7 @@ def is_terminology(word):
     return False
 
 
+
 def main():
     # columns_df = ['source', 'spec_number', 'spec_id', 'specification_data']
     df = create_df(DATASET_PATH)

@@ -5,6 +5,7 @@ import pandas as pd
 from tqdm import tqdm
 
 
+
 def create_df(dataset_path):
     """Function used to create a Pandas DataFrame containing specifications page titles
 
