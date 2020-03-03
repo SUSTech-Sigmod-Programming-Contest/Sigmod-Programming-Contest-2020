@@ -1,6 +1,7 @@
 import os
 import csv
 import pandas as pd
+import re
 
 columns_df = ['id', '<page title>']
 ban_list = {'1080p': 1, '720p': 1, '3d': 1}
@@ -19,14 +20,40 @@ if not os.path.exists('./model'):
 def collecting_models(page_title, model_exist, model_list):
     temp = page_title.split(" ")
     for i in range(0, len(temp) - 1):
-        word = temp[i]
+        '''
+            型号提取规则1：由一个单词组成
+            1) 长度大于等于2且如果长度小于等于3，最后一位不为x
+            2) 最后一位是字母，除了最后一位是数字
+            3) 第一位为字母，且型号包含字母和数字且仅有字母和数字和“-”组成
+        '''
+        for step in range(2):
+            word = temp[i+step]
+            if len(word) < 2 or (len(word) <= 3 and word[len(word)-1] == 'x') or \
+                    word.lower() in ban_list:
+                return
+            if re.match('[0-9]+[a-zA-Z]$', word):
+                if word.lower() in model_exist:
+                    return
+                model_exist[word.lower()] = 1
+                model_list.append(word)
+                return
+            elif re.match('[a-zA-Z][0-9a-zA-Z-]+$', word) and \
+                    re.search('[0-9]', word):
+                if word.lower() in model_exist:
+                    return
+                model_exist[word.lower()] = 1
+                model_list.append(word)
+
+
+        '''
         if rule1(word) and word.lower() not in ban_list:
             if word.lower() in model_exist:
                 return
             model_exist[word.lower()] = 1
             model_list.append(word)
             return
-
+        '''
+        '''
         word = temp[i + 1]
         if rule1(word) and word.lower() not in ban_list:
             if word.lower() in model_exist:
@@ -34,8 +61,14 @@ def collecting_models(page_title, model_exist, model_list):
             model_exist[word.lower()] = 1
             model_list.append(word)
             return
+        '''
 
-        if all_English_alphabet(temp[i]) and temp[i].lower() not in prefix_ban_list and all_digital(temp[i + 1]):
+        # if all_English_alphabet(temp[i]) and temp[i].lower() not in prefix_ban_list and all_digital(temp[i + 1]):
+        '''
+            型号提取规则2：由两个单词组成
+            第一个词由字母组成，第二个词由长度为3-5的数字或2-4位数字+1位部位x的字母组成。
+        '''
+        if re.match('[a-zA-Z]+$', temp[i]) and re.match('[0-9]{2,4}[0-9a-wy-zA-WY-Z]$', temp[i+1]):
             word = temp[i] + ' ' + temp[i + 1]
             if word.lower() in model_exist:
                 return
@@ -44,6 +77,7 @@ def collecting_models(page_title, model_exist, model_list):
             return
 
 
+'''
 def all_English_alphabet(word):
     if len(word) < 1:
         return False
@@ -64,24 +98,26 @@ def all_digital(word):
     if word[len(word) - 1].lower() == 'x':
         return False
     return True
+'''
 
 
+'''
 def rule1(word):
     score = 0
     if len(word) < 2:
         return False
     if len(word) <= 3 and word[len(word) - 1].lower() == 'x':
         return False
-    Flag = True
+    Flag = True # Flag 代表除最后一位为数字
     for i in range(0, len(word) - 1):
         if not word[i].isdigit():
             Flag = False
             break
-    if word[len(word) - 1].isalpha() and Flag:
+    if word[len(word) - 1].isalpha() and Flag:  # 最后一位是字母，除了最后一位是数字
         return True
     if not word[0].isalpha():
         return False
-    for alphabet in word:
+    for alphabet in word:    # 第一位为字母，且型号仅有字母和数字和“-”组成
         if alphabet.isalpha():
             score |= 1
         elif alphabet.isdigit():
@@ -90,20 +126,20 @@ def rule1(word):
             score |= 4
     if score == 3:
         return True
-
     return False
+'''
 
 
 def find_models(file, model_exist, model_list):
     with open(file, 'r', encoding='UTF-8') as f:
         reader = csv.reader(f)
-        isNotFirstLine = False
+        is_not_first_line = False
         for row in reader:
-            if isNotFirstLine:
+            if is_not_first_line:
                 page_title = row[1]
                 collecting_models(page_title, model_exist, model_list)
             else:
-                isNotFirstLine = True
+                is_not_first_line = True
 
 
 def matching(website, file, model_list):
@@ -111,9 +147,9 @@ def matching(website, file, model_list):
         data = {'id': [], '<page title>': []}
         with open(file, 'r', encoding='UTF-8') as f:
             reader = csv.reader(f)
-            isNotFirstLine = False
+            is_not_first_line = False
             for row in reader:
-                if isNotFirstLine:
+                if is_not_first_line:
                     key = row[0]
                     page_title = row[1]
                     temp = page_title.split(" ")
@@ -129,7 +165,7 @@ def matching(website, file, model_list):
                             data['id'].append(key)
                             data['<page title>'].append(page_title)
                 else:
-                    isNotFirstLine = True
+                    is_not_first_line = True
         df = pd.DataFrame(data, columns=columns_df)
         df.to_csv(output_path + '/' + website + '/' + model + '.csv', index=False)
 
