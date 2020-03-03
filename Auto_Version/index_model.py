@@ -7,7 +7,7 @@ columns_df = ['id', '<page title>']
 ban_list = {'1080p': 1, '720p': 1, '3d': 1}
 prefix_ban_list = {'under': 1, 'with': 1, 'camera': 1, 'full': 1, 'black': 1, 'pink': 1, 'for': 1, 'body': 1,
                    'canon': 1, 'ef': 1, 'top': 1, 'w': 1, 'led': 1, 'tv': 1, 'kit': 1}
-special_model = {'Canon': ['xt', 'xti', 'xs', 'xsi', 'eos-1d'],
+special_model = {'Canon': ['xt', 'xti', 'xs', 'xsi', 'eos-1d', 'eos m'],
                  'Nikon': ['df', 'v1', 'v2', 'd1x', 'd2x', 'd3x']}
 dataset_path = './brand'
 output_path = './model'
@@ -28,7 +28,7 @@ def collecting_models(page_title, model_exist, model_list):
         '''
         for step in range(2):
             word = temp[i+step]
-            if len(word) < 2 or (len(word) <= 3 and word[len(word)-1] == 'x') or \
+            if len(word) < 2 or (len(word) <= 3 and word[len(word)-1].lower() == 'x') or \
                     word.lower() in ban_list:
                 return
             if re.match('[0-9]+[a-zA-Z]$', word):
@@ -68,7 +68,9 @@ def collecting_models(page_title, model_exist, model_list):
             型号提取规则2：由两个单词组成
             第一个词由字母组成，第二个词由长度为3-5的数字或2-4位数字+1位部位x的字母组成。
         '''
-        if re.match('[a-zA-Z]+$', temp[i]) and re.match('[0-9]{2,4}[0-9a-wy-zA-WY-Z]$', temp[i+1]):
+        if re.match('[a-zA-Z]+$', temp[i]) and \
+                temp[i].lower() not in prefix_ban_list and \
+                re.match('[0-9]{1,4}[0-9a-wy-zA-WY-Z]$', temp[i+1]):
             word = temp[i] + ' ' + temp[i + 1]
             if word.lower() in model_exist:
                 return
@@ -158,8 +160,25 @@ def matching(website, file, model_list):
                             vis[key] = 1
                             data['id'].append(key)
                             data['<page title>'].append(page_title)
+                        if re.match('[a-z]+[0-9]+[a-z]+$', word.lower()):
+                            part = re.findall('([a-z]+[0-9]+)', word.lower())[0]
+                            if part == model.lower():
+                                vis[key] = 1
+                                data['id'].append(key)
+                                data['<page title>'].append(page_title)
+                            else:
+                                tmp_word = re.findall('[a-z]+', part)[0] + ' ' + re.findall('[0-9]+', part)[0]
+                                if tmp_word == model.lower():
+                                    vis[key] = 1
+                                    data['id'].append(key)
+                                    data['<page title>'].append(page_title)
                     for i in range(0, len(temp) - 1):
                         word = temp[i] + ' ' + temp[i + 1]
+                        if word.lower() == model.lower():
+                            vis[key] = 1
+                            data['id'].append(key)
+                            data['<page title>'].append(page_title)
+                        word = temp[i] + temp[i + 1]
                         if word.lower() == model.lower():
                             vis[key] = 1
                             data['id'].append(key)
