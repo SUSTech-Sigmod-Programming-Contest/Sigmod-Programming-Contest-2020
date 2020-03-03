@@ -19,5 +19,16 @@ if __name__ == '__main__':
     os.system("python ./get_page_title.py")
     os.system("python ./index_brand.py")
     os.system("python ./index_model.py")
+    fileList = os.listdir('./filter')
+    for file in fileList:
+        path = 'python ./filter/' + file
+        os.system(path)
+    os.system("python ./resolve_brand.py")
+    os.system("python ./multiple_model.py")
+    os.system("python ./collect_remain.py")
     os.system("python ./solve.py")
+    os.system("python ./collect_duplicate.py")
+    os.system("python ./merge_duplicate.py")
     os.system("python ./judge/judge.py")
+
+

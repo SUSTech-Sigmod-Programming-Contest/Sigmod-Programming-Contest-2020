@@ -12,6 +12,7 @@ def solve():
     for source in tqdm(os.listdir(DATA_PATH)):
         for model in os.listdir(os.path.join(DATA_PATH, source)):
             if model == 'others.csv':
+                #os.remove(DATA_PATH+'/'+source+'/'+model)
                 continue
             with open(DATA_PATH + '/' + source + '/' + model, 'r', encoding='UTF-8') as file:
                 reader = csv.reader(file)

@@ -1,13 +1,15 @@
 import pandas as pd
 import os
-import csv
 import json
 from edit_distance import *
+from find_page_title import *
 
 dataset_path = './2013_camera_specs'
 special_brand = ['Hikvision', 'Dahua', 'Konica', 'Cannon', 'Coolpix', 'Vista Quest', 'Go Pro']
+ban_list = {'Tamron': 1, 'SHOOT': 1}
 columns_df = ['id', '<page title>']
 brand_list = []
+brand_items = {}
 brand_exist = {}
 
 
@@ -55,7 +57,10 @@ def get_brand_list():
         website_path = dataset_path + '/' + website
         fileList = os.listdir(website_path)
         for file in fileList:
+            [id, forma] = file.split('.')
+            key = website + '//'
             file = website_path + '/' + file
+            key += id + ''
             f = open(file)
             attributes = json.load(f)
             for attribute in attributes:
@@ -66,8 +71,11 @@ def get_brand_list():
                     if not test_valid_brand(brand):
                         continue
                     if brand not in brand_exist:
+                        brand_items[brand] = []
+                        brand_items[brand].append(key)
                         brand_exist[brand] = 0
                     brand_exist[brand] += 1
+                    brand_items[brand].append(key)
     remove_low_frequency()
     remove_duplicate()
     add_special()
@@ -113,6 +121,7 @@ def isNotChineseBrand(brand):
 
 def blocking():
     for brand in brand_list:
+        visit = {}
         Flag = isNotChineseBrand(brand)
         data = {'id': [], '<page title>': []}
         with open('./page_title/page_title.csv', 'r', encoding='UTF-8') as file:
@@ -125,12 +134,17 @@ def blocking():
                             continue
                         if row[0].find('www.ebay.com') != -1 and row[1].lower().find('lot of') != -1:
                             continue
+                        visit[row[0]] = 1
                         add_data(data, row[0], row[1])
                 else:
                     isNotFirstLine = True
+        if brand in brand_items:
+            for item in brand_items[brand]:
+                if item not in visit:
+                    visit[item] = 1
+                    add_data(data, item, find_page_title(item))
         df = pd.DataFrame(data, columns=columns_df)
         df.to_csv('./brand/' + brand + '/' + brand + '.csv', index=False)
-
 
 
 def merge(to_brand, from_brand):

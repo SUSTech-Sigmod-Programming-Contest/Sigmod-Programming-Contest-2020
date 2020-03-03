@@ -1,12 +1,13 @@
 import os
 import csv
 import pandas as pd
-from edit_distance import *
 
 columns_df = ['id', '<page title>']
-ban_list = {'1080p': 1, '720p': 1}
+ban_list = {'1080p': 1, '720p': 1, '3d': 1}
 prefix_ban_list = {'under': 1, 'with': 1, 'camera': 1, 'full': 1, 'black': 1, 'pink': 1, 'for': 1, 'body': 1,
-                   'canon': 1, 'ef': 1, 'top': 1}
+                   'canon': 1, 'ef': 1, 'top': 1, 'w': 1, 'led': 1, 'tv': 1, 'kit': 1}
+special_model = {'Canon': ['xt', 'xti', 'xs', 'xsi', 'eos-1d'],
+                 'Nikon': ['df', 'v1', 'v2', 'd1x', 'd2x', 'd3x']}
 dataset_path = './brand'
 output_path = './model'
 vis = {}
@@ -27,7 +28,7 @@ def collecting_models(page_title, model_exist, model_list):
             return
 
         word = temp[i + 1]
-        if rule1(word) and word not in ban_list:
+        if rule1(word) and word.lower() not in ban_list:
             if word.lower() in model_exist:
                 return
             model_exist[word.lower()] = 1
@@ -133,24 +134,6 @@ def matching(website, file, model_list):
         df.to_csv(output_path + '/' + website + '/' + model + '.csv', index=False)
 
 
-def collect_remain(website, file):
-    data = {'id': [], '<page title>': []}
-    with open(file, 'r', encoding='UTF-8') as f:
-        reader = csv.reader(f)
-        isNotFirstLine = False
-        for row in reader:
-            if isNotFirstLine:
-                key = row[0]
-                page_title = row[1]
-                if key not in vis:
-                    data['id'].append(key)
-                    data['<page title>'].append(page_title)
-            else:
-                isNotFirstLine = True
-    df = pd.DataFrame(data, columns=columns_df)
-    df.to_csv(output_path + '/' + website + '/' + 'others.csv', index=False)
-
-
 def kill_non_contribute():
     for website in os.listdir('./model'):
         website_path = output_path + '/' + website
@@ -225,13 +208,15 @@ for website in os.listdir(dataset_path):
             os.makedirs('./model/' + brand)
         model_list = []
         model_exist = {}
+        if brand in special_model:
+            for model in special_model[brand]:
+                model_list.append(model)
+                model_exist[model] = 1
         file = website_path + '/' + file
         print("Getting model list...")
         find_models(file, model_exist, model_list)
         print("Resolve by model...")
         matching(website, file, model_list)
-        print("Collect remain...")
-        collect_remain(website, file)
         print("Merge models...")
         remove_path = merge_pair(model_list, brand)
         print("Remove non-contribute...")
