@@ -12,4 +12,5 @@ for file in fileList:
     if model.lower() in ban_list:
         os.remove(dataset_path+'/'+file)
 
-
+merge('A5000', '5000Y', dataset_path)
+merge('A3000', '3000K', dataset_path)
