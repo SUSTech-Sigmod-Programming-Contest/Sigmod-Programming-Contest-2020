@@ -1,14 +1,38 @@
 import os
 import csv
 import pandas as pd
+import re
 
 dataset_path = './model'
 resolve_list = {}
 columns_df = ['id', '<page title>']
 
 
+def word_index(string, word):
+    index = 0
+    for each_word in string.split(' '):
+        if each_word == word:
+            return index
+        else:
+            index = index + 1
+    return -1
+
+
 def check(page_title, identifier):
-    if page_title.lower().find(identifier) != -1 and page_title.lower().find(identifier) < len(page_title) / 2:
+    if page_title.lower().find(identifier) == -1:
+        return False
+    words = page_title.lower().split(' ')
+    for ith in range(2, len(words)):
+        if words[ith] == identifier and \
+                not re.match('[0-9]+$', words[ith-1]) and \
+                not re.match('[0-9]+$', words[ith-2]):
+            return True
+    return False
+
+
+def check_has(page_title, identifier):
+    if page_title.lower().find(identifier) != -1 and \
+            page_title.lower().find(identifier) < len(page_title) / 2:
         return True
     return False
 
@@ -16,38 +40,38 @@ def check(page_title, identifier):
 for brand in os.listdir(dataset_path):
     brand_path = dataset_path + '/' + brand
     fileList = os.listdir(brand_path)
-    for file in fileList:
+    for model_file in fileList:
         total = 0
         cnt = 0
         score = 0
-        file = brand_path + '/' + file
-        with open(file, 'r', encoding='UTF-8') as f:
+        model, _ = model_file.lower().split('.')
+        model_file = brand_path + '/' + model_file
+        with open(model_file, 'r', encoding='UTF-8') as f:
             reader = csv.reader(f)
             i = False
             for row in reader:
                 if i:
                     total += 1
-                    if check(row[1], ' i '):
+                    if check_has(row[1], ' i '):
                         cnt += 1
                         score |= 1
-                    if check(row[1], ' ii '):
+                    if check_has(row[1], ' ii '):
                         score |= 2
                         cnt += 1
-                    if check(row[1], ' iii '):
+                    if check_has(row[1],  ' iii '):
                         cnt += 1
                         score |= 3
                 if not i:
                     i = True
-        if score == 3 and cnt > 0.25 * total:
-            resolve_list[file] = 1
+        if score == 3 and cnt > 0.25 * total:  # 如果某个品牌有I II III IV的数量大于一定值才考虑区分
+            resolve_list[model_file] = 1
 
 resolve_list['./model/Canon/7D.csv'] = 1
 
 vis = {}
-for file in resolve_list:
-    with open(file, 'r', encoding='UTF-8') as f:
-        pre = file[0:-4]
-        print(pre)
+for model_file in resolve_list:
+    with open(model_file, 'r', encoding='UTF-8') as f:
+        pre = model_file[0:-4]
         reader = csv.reader(f)
         data = {'id': [], '<page title>': []}
         data_ii = {'id': [], '<page title>': []}
@@ -56,13 +80,13 @@ for file in resolve_list:
         i = False
         for row in reader:
             if i:
-                if row[1].lower().find(' ii ') != -1:
-                    data_ii['id'].append(row[0])
-                    data_ii['<page title>'].append(row[1])
-                elif row[1].lower().find(' iii ') != -1:
+                if check(row[1], 'iii'):
                     data_iii['id'].append(row[0])
                     data_iii['<page title>'].append(row[1])
-                elif row[1].lower().find(' iv ') != -1:
+                elif check(row[1], 'ii'):
+                    data_ii['id'].append(row[0])
+                    data_ii['<page title>'].append(row[1])
+                elif check(row[1], 'iv'):
                     data_iv['id'].append(row[0])
                     data_iv['<page title>'].append(row[1])
                 else:

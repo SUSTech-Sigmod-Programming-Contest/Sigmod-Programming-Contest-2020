@@ -2,12 +2,16 @@ import os
 import csv
 import pandas as pd
 import re
+from dataloader import load_json
 
 columns_df = ['id', '<page title>']
-ban_list = {'1080p': 1, '720p': 1, '3d': 1}
-prefix_ban_list = {'under': 1, 'with': 1, 'camera': 1, 'full': 1, 'black': 1, 'pink': 1, 'for': 1, 'body': 1,
-                   'canon': 1, 'ef': 1, 'top': 1, 'w': 1, 'led': 1, 'tv': 1, 'kit': 1}
-special_model = {'Canon': ['xt', 'xti', 'xs', 'xsi', 'eos-1d', 'eos m'],
+# ban_list = {'1080p': 1, '720p': 1, '3d': 1, 'nikon1': 1}
+ban_set = {'1080p', '720p', '3d', 'nikon1'}
+# prefix_ban_list = {'under': 1, 'with': 1, 'camera': 1, 'full': 1, 'black': 1, 'pink': 1, 'for': 1, 'body': 1,
+#                   'canon': 1, 'ef': 1, 'top': 1, 'w': 1, 'led': 1, 'tv': 1, 'kit': 1, 'nikon': 1, 'nikon1': 1}
+prefix_ban_set = {'under', 'with', 'camera', 'full', 'black', 'pink', 'for', 'body',
+                  'canon', 'ef', 'top', 'w', 'led', 'tv', 'kit', 'nikon', 'nikon1'}
+special_model = {'Canon': ['xt', 'xti', 'xs', 'xsi', 'eos-1d', 'eos m', '60da'],
                  'Nikon': ['df', 'v1', 'v2', 'd1x', 'd2x', 'd3x']}
 dataset_path = './brand'
 output_path = './model'
@@ -29,7 +33,7 @@ def collecting_models(page_title, model_exist, model_list):
         for step in range(2):
             word = temp[i+step]
             if len(word) < 2 or (len(word) <= 3 and word[len(word)-1].lower() == 'x') or \
-                    word.lower() in ban_list:
+                    word.lower() in ban_set:
                 return
             if re.match('[0-9]+[a-zA-Z]$', word):
                 if word.lower() in model_exist:
@@ -69,7 +73,7 @@ def collecting_models(page_title, model_exist, model_list):
             第一个词由字母组成，第二个词由长度为3-5的数字或2-4位数字+1位部位x的字母组成。
         '''
         if re.match('[a-zA-Z]+$', temp[i]) and \
-                temp[i].lower() not in prefix_ban_list and \
+                temp[i].lower() not in prefix_ban_set and \
                 re.match('[0-9]{1,4}[0-9a-wy-zA-WY-Z]$', temp[i+1]):
             word = temp[i] + ' ' + temp[i + 1]
             if word.lower() in model_exist:
@@ -154,12 +158,28 @@ def matching(website, file, model_list):
                 if is_not_first_line:
                     key = row[0]
                     page_title = row[1]
-                    temp = page_title.split(" ")
+                    tmp_page_title = page_title
+
+                    # model_label = load_json(key).get('model')
+                    # if model_label:
+                    #     if isinstance(model_label, list):
+                    #         for each_model_label in model_label:
+                    #             tmp_page_title = tmp_page_title + ' ' + each_model_label
+                    #     else:
+                    #         tmp_page_title = tmp_page_title + ' ' + model_label
+
+                    temp = tmp_page_title.lower().split(" ")
                     for word in temp:
                         if word.lower() == model.lower():
                             vis[key] = 1
                             data['id'].append(key)
                             data['<page title>'].append(page_title)
+                        elif word.find('-'):
+                            for part in word.lower().split('-'):
+                                if part.lower() == model.lower() and len(part) >= 3:
+                                    vis[key] = 1
+                                    data['id'].append(key)
+                                    data['<page title>'].append(page_title)
                         if re.match('[a-z]+[0-9]+[a-z]+$', word.lower()):
                             part = re.findall('([a-z]+[0-9]+)', word.lower())[0]
                             if part == model.lower():
@@ -253,31 +273,33 @@ def merge_pair(model_list, brand):
     return remove_path
 
 
-for website in os.listdir(dataset_path):
-    print(website)
-    website_path = dataset_path + '/' + website
-    fileList = os.listdir(website_path)
-    for file in fileList:
-        [brand, forma] = file.split('.')
-        if not os.path.exists('./model/' + brand):
-            os.makedirs('./model/' + brand)
-        model_list = []
-        model_exist = {}
-        if brand in special_model:
-            for model in special_model[brand]:
-                model_list.append(model)
-                model_exist[model] = 1
-        file = website_path + '/' + file
-        print("Getting model list...")
-        find_models(file, model_exist, model_list)
-        print("Resolve by model...")
-        matching(website, file, model_list)
-        print("Merge models...")
-        remove_path = merge_pair(model_list, brand)
-        print("Remove non-contribute...")
-        kill_non_contribute()
-        print("Finish!")
-        for path in remove_path:
-            if os.path.exists(path):
-                os.remove(path)
-        print()
+if __name__ == '__main__':
+
+    for website in os.listdir(dataset_path):
+        print(website)
+        website_path = dataset_path + '/' + website
+        fileList = os.listdir(website_path)
+        for file in fileList:
+            brand, _ = file.split('.')
+            if not os.path.exists('./model/' + brand):
+                os.makedirs('./model/' + brand)
+            model_list = []
+            model_exist = {}
+            if brand in special_model:
+                for model in special_model[brand]:
+                    model_list.append(model)
+                    model_exist[model] = 1
+            file = website_path + '/' + file
+            print("Getting model list...")
+            find_models(file, model_exist, model_list)
+            print("Resolve by model...")
+            matching(website, file, model_list)
+            print("Merge models...")
+            remove_path = merge_pair(model_list, brand)
+            print("Remove non-contribute...")
+            # kill_non_contribute()
+            print("Finish!")
+            for path in remove_path:
+                if os.path.exists(path):
+                    os.remove(path)
+            print()

@@ -33,6 +33,8 @@ class F_measure:
         self.res = 2 * P * R / (P + R)
         with open('./judge/FP.csv', 'w', encoding='UTF-8') as FP_file:
             for row in self.FP_list:
+                if row[0] == row[1]:
+                    continue
                 FP_file.write(row[0] + ': ' + load_page_title(row[0]) + '\n')
                 FP_file.write('model: ' + load_model(row[0]) + '\n')
                 FP_file.write(row[1] + ': ' + load_page_title(row[1]) + '\n')
