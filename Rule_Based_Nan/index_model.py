@@ -23,6 +23,7 @@ if not os.path.exists('./model'):
 
 def collecting_models(page_title, model_exist, model_list):
     temp = page_title.split(" ")
+
     for i in range(0, len(temp) - 1):
         word = temp[i]
         if rule1(word) and word.lower() not in ban_list:
@@ -142,9 +143,6 @@ def matching(website, file, model_list):
 def kill_non_contribute():
     for brand in os.listdir('./model'):
         brand_path = output_path + '/' + brand
-        if not os.listdir(brand_path):
-            os.removedirs(brand_path)
-            continue
         fileList = os.listdir(brand_path)
         for file in fileList:
             file = brand_path + '/' + file

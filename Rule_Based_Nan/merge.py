@@ -5,7 +5,7 @@ import pandas as pd
 columns_df = ['id', '<page title>']
 
 
-def merge(to_model, from_model, dataset_path):
+def merge(to_model, from_model, dataset_path, label):
     from_path = dataset_path + '/' + from_model + '.csv'
     to_path = dataset_path + '/' + to_model + '.csv'
     duplicate = {}
@@ -32,4 +32,5 @@ def merge(to_model, from_model, dataset_path):
                 i = True
     df = pd.DataFrame(data, columns=columns_df)
     df.to_csv(to_path, index=False)
-    os.remove(from_path)
+    if label == 1:
+        os.remove(from_path)

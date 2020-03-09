@@ -1,20 +1,20 @@
 from tqdm import tqdm
-import os
-import csv
 import pandas as pd
+import csv
+import os
 
 DATA_PATH = "./model"
 columns_df = ['left_spec_id', 'right_spec_id']
 data = {'left_spec_id': [], 'right_spec_id': []}
 
-list = {'Canon': 1, 'Sony': 1, 'Nikon': 1}
+list = {'Fujifilm': 1, 'Samsung': 1, 'Pentax': 1, 'Panasonic': 1, 'Olympus': 1,'Leica':1}
 
 
 def solve():
     for source in tqdm(os.listdir(DATA_PATH)):
         for model in os.listdir(os.path.join(DATA_PATH, source)):
             if model == 'others.csv':
-                # os.remove(DATA_PATH+'/'+source+'/'+model)
+                os.remove(DATA_PATH+'/'+source+'/'+model)
                 continue
             with open(DATA_PATH + '/' + source + '/' + model, 'r', encoding='UTF-8') as file:
                 reader = csv.reader(file)

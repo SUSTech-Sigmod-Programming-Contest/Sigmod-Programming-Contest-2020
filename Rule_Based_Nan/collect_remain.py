@@ -2,7 +2,8 @@ import os
 import csv
 import pandas as pd
 
-dataset_path = './model'
+dataset_path = './brand'
+output_path = './model'
 columns_df = ['id', '<page title>']
 
 vis = {}
@@ -23,11 +24,11 @@ def collect_remain(website, file):
             else:
                 isNotFirstLine = True
     df = pd.DataFrame(data, columns=columns_df)
-    df.to_csv(dataset_path + '/' + website + '/' + 'others.csv', index=False)
+    df.to_csv(output_path + '/' + website + '/' + 'others.csv', index=False)
 
 
-for website in os.listdir(dataset_path):
-    website_path = dataset_path + '/' + website
+for website in os.listdir(output_path):
+    website_path = output_path + '/' + website
     fileList = os.listdir(website_path)
     for file in fileList:
         file = website_path + '/' + file

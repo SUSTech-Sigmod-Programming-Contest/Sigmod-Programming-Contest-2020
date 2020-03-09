@@ -17,12 +17,18 @@ def remove_recursive(path):
 
 if __name__ == '__main__':
     start_time = time.localtime()
+    print('Removing existed solution...\n')
     remove_recursive('./brand')
     remove_recursive('./model')
     remove_recursive('./page_title')
 
+    print("Preprocessing...\n")
     os.system("python ./preprocessing.py")
+
+    print("Block According to Brand...\n")
     os.system("python ./index_brand.py")
+
+    print("Block According to Index...\n")
     os.system("python ./index_model.py")
 
     for file in os.listdir('./filter'):
@@ -30,14 +36,15 @@ if __name__ == '__main__':
 
     os.system("python ./resolve_brand.py")
     os.system("python ./multiple_model.py")
+    os.system("python ./intersection.py")
     os.system("python ./collect_remain.py")
     os.system("python ./solve.py")
     os.system("python ./collect_duplicate.py")
     os.system("python ./merge_duplicate.py")
-    os.system("python ./judge/judge.py")
 
+    os.system("python ./judge/judge.py")
     print("Start time: ", end=" ")
-    print(time.strftime("%Y-%m-%d %H:%M:%S", start_time))
+    print(time.strftime("%H:%M:%S", start_time))
     end_time = time.localtime()
     print("End time : ", end=" ")
-    print(time.strftime("%Y-%m-%d %H:%M:%S", end_time))
+    print(time.strftime("%H:%M:%S", end_time))
