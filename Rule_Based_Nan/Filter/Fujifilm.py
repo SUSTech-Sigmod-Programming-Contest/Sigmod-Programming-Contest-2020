@@ -30,9 +30,10 @@ for i in range(0, len(fileList)):
         if len(b) > 5 and b[-3:].lower() == 'exr':
             if test_prefix(a, b) and len(b)-len(a) == 3:
                 print(a, b)
-                merge(a, b, dataset_path)
+                merge(a, b, dataset_path,1)
+
 
         if len(b) > 5 and b[-5:].lower() == 'black':
             if test_prefix(a, b) and len(b)-len(a) == 5:
                 print(a, b)
-                merge(a, b, dataset_path)
+                merge(a, b, dataset_path,1)

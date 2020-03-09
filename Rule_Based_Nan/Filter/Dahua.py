@@ -1,5 +1,4 @@
 import os
-from merge import *
 
 dataset_path = './model/Dahua'
 
