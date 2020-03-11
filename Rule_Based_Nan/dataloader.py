@@ -1,7 +1,7 @@
 import os
 import json
 
-DATASET_PATH = 'data/camera_specs'
+DATASET_PATH = './2013_camera_specs'
 
 
 def load_json(index):
