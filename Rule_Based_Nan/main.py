@@ -38,9 +38,10 @@ if __name__ == '__main__':
     os.system("python ./multiple_model.py")
     os.system("python ./intersection.py")
     os.system("python ./collect_remain.py")
+
+    os.system("python ./resolve_others.py")
+    os.system("python ./merge_same.py")
     os.system("python ./solve.py")
-    os.system("python ./collect_duplicate.py")
-    os.system("python ./merge_duplicate.py")
 
     os.system("python ./judge/judge.py")
     print("Start time: ", end=" ")
