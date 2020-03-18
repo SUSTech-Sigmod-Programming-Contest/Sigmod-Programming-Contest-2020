@@ -24,10 +24,10 @@ def resolve_others(brand):
         else:
             found_flag = False
             for prefix in prefix_reg_list:
-                reg_ext = re.compile(r'[ ,]' + prefix + r'[ -]?[0-9]+[a-zA-Z]*', re.I)
+                reg_ext = re.compile(r'[ ,]' + prefix + r'[ -]?[0-9]+[a-zA-Z]*[ ,]?', re.I)
                 if reg_ext.findall(row[1]):
                     found_flag = True
-                    model_name = reg_ext.findall(row[1])[0][1:]
+                    model_name = reg_ext.findall(row[1])[0][1:-1]
                     if model_name not in models:
                         models[model_name] = {'id': [], '<page_title>': []}
                     models[model_name]['id'].append(row[0])

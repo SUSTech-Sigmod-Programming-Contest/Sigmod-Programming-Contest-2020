@@ -7,9 +7,9 @@ import dataloader
 prefix_dict = {
     'Canon': ['IXUS', 'ELPH', 'IXY', 'Powershot'],
     'Casio': ['EX'],
-    'Fujifilm': [],
+    'Fujifilm': ['Finepix'],
     'GE': [],
-    'Olympus': [r'SP', r'E', r'TG', r'SZ', r'Stylus', r'x', r'XZ', r'TG'],
+    'Olympus': [r'SP', r'E', r'TG', r'SZ', r'Stylus', r'x', r'XZ', r'TG', r'SH'],
     'Panasonic': ['DMC'],
     'Samsung': ['EC'],
     'Sony': ['NEX', 'DSC', 'DMC', 'DSLR', 'SLT'],
@@ -17,10 +17,9 @@ prefix_dict = {
 }
 
 meaningful_postfix_dict = {
-    'Fujifilm': r'(s|t)',
-    'Sony': r'r|s|(M3)|(II)|(III)|(IV)|K|N|R|T|(NL)',
-    'Nokon': 's|x|e|h',
-    'Olympus': 's|k|a|r|w'
+    'Fujifilm': r'(s|t|w)',
+    'Sony': r'(r|s|(M3)|(II)|(III)|(IV))',
+    'Nikon': r'(s|x|e|h)',
 }
 
 
@@ -28,7 +27,7 @@ def refine_model(brand_name, model_raw):
     model_clean = model_raw
     prefix_reg_list = prefix_dict[brand_name]
     if brand_name in meaningful_postfix_dict.keys():
-        meaningful_postfix_reg = meaningful_postfix_dict[brand]
+        meaningful_postfix_reg = meaningful_postfix_dict[brand_name]
     else:
         meaningful_postfix_reg = None
     for reg in prefix_reg_list:
@@ -39,7 +38,7 @@ def refine_model(brand_name, model_raw):
                 model_clean = tmp
             else:
                 model_clean = reg + tmp  # 去掉空格和-
-    if re.match('[a-zA-Z]+[ -][0-9]+$', model_clean):
+    if re.match('[a-zA-Z]+[ -][0-9]+$', model_clean, re.I):
         tmp = re.findall('([a-zA-Z]+)[ -]([0-9]+)$', model_clean)
         model_clean = tmp[0][0] + tmp[0][1]
     if re.match('[a-zA-Z]+[0-9]+[a-zA-Z]+', model_clean):
@@ -61,7 +60,7 @@ def extract_same_model(brand):
             for row in reader:
                 if is_first_row:
                     is_first_row = False
-                else:
+                elif row:
                     model_label_content = dataloader.load_model(row[0])
                     if re.match('.* / .*', model_label_content):
                         same_models.add(tuple(model_label_content.split(' / ')))
@@ -69,6 +68,7 @@ def extract_same_model(brand):
 
 
 if __name__ == '__main__':
+    # print(extract_same_model('Canon'))
     for brand in prefix_dict.keys():
         print('Merge Same Model:', brand)
         dataset_path = './model/' + brand
