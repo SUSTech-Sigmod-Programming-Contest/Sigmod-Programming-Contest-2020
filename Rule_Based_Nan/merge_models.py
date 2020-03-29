@@ -1,9 +1,9 @@
-from resolve_others import identify_model_param
+from resolve_others_param import identify_model_param
 from edit_distance import calculate_Edit_Distance
 import re
 import os
 from merge import merge
-from resolve_others import identify_model
+from resolve_others_param import identify_model
 import csv
 import dataloader
 

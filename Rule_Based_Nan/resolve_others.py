@@ -24,10 +24,22 @@ def resolve_others(brand):
         else:
             found_flag = False
             for prefix in prefix_reg_list:
-                reg_ext = re.compile(r'[ ,]' + prefix + r'[ -]?[0-9]+[a-zA-Z]*[ ,]?', re.I)
+                if len(prefix) == 1:
+                    reg_ext = re.compile(r'[ ,]' + prefix + r'[0-9]+[a-zA-Z]*', re.I)
+                else:
+                    reg_ext = re.compile(r'[ ,]' + prefix + r'[ -]?[0-9a-zA-Z]+', re.I)
                 if reg_ext.findall(row[1]):
+                    found_list = reg_ext.findall(row[1])
+                    # print(found_list)
+                    found_str = None
+                    for item in found_list:
+                        if re.search('[0-9]+', item):
+                            found_str = item
+                            break
+                    if not found_str:
+                        continue
                     found_flag = True
-                    model_name = reg_ext.findall(row[1])[0][1:-1]
+                    model_name = found_str[1:]
                     if model_name not in models:
                         models[model_name] = {'id': [], '<page_title>': []}
                     models[model_name]['id'].append(row[0])
@@ -56,7 +68,7 @@ def resolve_others(brand):
     file_others.close()
     new_others_df = pd.DataFrame(new_others_dict, columns=columns_df)
     new_others_df.to_csv(others_path, index=False)
-    # print('length of others:', len(new_others_dict['id']))
+    print('length of others:', len(new_others_dict['id']))
 
 
 if __name__ == '__main__':

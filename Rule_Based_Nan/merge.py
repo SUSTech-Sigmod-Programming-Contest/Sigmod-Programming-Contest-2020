@@ -25,6 +25,8 @@ def merge(to_model, from_model, dataset_path, label):
         i = False
         for row in reader:
             if i:
+                if not row:
+                    continue
                 if row[0] not in duplicate:
                     data['id'].append(row[0])
                     data['<page title>'].append(row[1])
