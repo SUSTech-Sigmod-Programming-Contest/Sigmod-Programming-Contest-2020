@@ -5,11 +5,13 @@ from index_brand import index_brand
 from index_model import index_model
 from filters import filtering
 from reverse_index import build_reverse_index
-from reverse_index import get_more_than_three
+from reverse_index import get_more_than
+from reverse_index import get_non
 from reverse_index import multiple_model
 from intersection import intersection
 from merge_same import merge_same
 from split_brand import split_brand
+from resolve_others import resolve_others
 
 
 # def remove_recursive(path):
@@ -51,6 +53,8 @@ if __name__ == '__main__':
     multiple_model()
     intersection()
     collect_remain()
+
+    resolve_others()
 
     merge_same()
     split_brand()
